@@ -1,0 +1,18 @@
+{
+  "short_name": "QR Scanner",
+  "name": "Simple QR-code scanner",
+  "icons": [
+    {
+      "src": "scan-app-ios-icon-1024x1024.png",
+      "sizes": "1024x1024",
+      "type": "image/png"
+    }
+  ],
+  "permissions": {
+    "video-capture": {
+      "description": "Required to to be able to capture QR-codes using camera"
+    }
+  },
+  "display": "standalone",
+  "orientation": "portrait"
+}
