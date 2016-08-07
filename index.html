@@ -168,24 +168,24 @@
         </div>
         <script>
             qrcode.callback = function(data) {
-                var dataElement;
+                var content = document.createTextNode(data);
 
                 if (qrcode.isUrl(data)) {
-                    dataElement = document.createElement("a");
-                    dataElement.href = "data";
-                    dataElement.target = "_blank";
-                } else {
-                    dataElement = document.createTextNode(data);
-                }
+                    var link = document.createElement("a");
+                    link.href = data;
+                    link.target = "_blank";
+                    link.appendChild(content);
+                    content = link;
+                } 
 
                 var node = document.getElementById("result-data");
                 while (node.firstChild) {
                     node.removeChild(node.firstChild);
                 }
 
-                node.appendChild(dataElement);
+                node.appendChild(content);
 
-                document.getElementById("result").display = "";
+                document.getElementById("result").style.display = "block";
             };
 
             var constraintsToChrome_ = function(c) {
