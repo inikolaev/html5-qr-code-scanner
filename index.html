@@ -140,6 +140,11 @@
                 font-weight: 100;
             }
 
+            #result-content a {
+                color: #2196f3;
+                text-decoration: none;
+            }
+
             #buttons {
                 position: absolute;
                 right: 0;
@@ -157,7 +162,7 @@
                 text-transform: uppercase;
                 text-decoration: none;
                 padding: 8px;
-                color: #2196f3;    
+                color: #2196f3;
             }
 
             @media screen and (min-device-width: 481px) and (orientation: landscape){
@@ -209,9 +214,11 @@
                 node.appendChild(content);
 
                 document.getElementById("result").style.display = "block";
+                document.getElementById("video").pause();
             }
 
             function closeResults() {
+                document.getElementById("video").play();
                 document.getElementById("result").style.display = "none";   
             }
 
