@@ -35,9 +35,19 @@ self.addEventListener('fetch', function(event) {
                     return response;
                 }
 
+                console.log("Fetching response from network: ", response);
                 return fetch(event.request)
                     .then(function(response) {
-                        console.log("Fetching response from network: ", response);
+                        // Close response stream before caching or returning it
+                        var responseToCache = response.clone();
+                        caches.open(CACHE_NAME)
+                            .then(function(cache) {
+                                // Add response to cache
+                                console.log("Adding response to cache: ", responseToCache);
+                                cache.put(event.request, responseToCache);
+                            });
+
+                        console.log("Returning response to the browser: ", response);
                         return response;
                     })
                     .catch(function(error) {
