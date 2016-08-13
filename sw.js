@@ -66,4 +66,18 @@ self.addEventListener('activate', function(event) {
     console.log("Activating ServiceWorker");
 
     // Here we can clean obsolete caches
+    console.log("Deleting obsolete caches");
+    event.waitUntil(
+        caches.keys()
+            .then(function(cacheNames) {
+                return Promise.all(
+                    cacheNames.forEach(function(cacheName) {
+                        if (CACHE_NAME != cacheName) {
+                            console.log("Deleting cache: ", cacheName);
+                            return caches.delete(cacheName);
+                        }
+                    })
+                );
+            })
+    );
 });
