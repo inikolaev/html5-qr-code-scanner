@@ -28,7 +28,8 @@ self.addEventListener('fetch', function(event) {
     // Handle HTTP requests coming from the page
     console.log("Fetching " + event.request.url);
     event.respondWith(
-        caches.match(event.request)
+        caches
+            .match(event.request)
             .then(function(response) {
                 if (response) {
                     console.log("Found matching response in cache: ", response);
@@ -38,6 +39,8 @@ self.addEventListener('fetch', function(event) {
                 console.log("Fetching response from network: ", response);
                 return fetch(event.request)
                     .then(function(response) {
+                        console.log("Handling response: ", response);
+
                         // Close response stream before caching or returning it
                         var responseToCache = response.clone();
                         caches.open(CACHE_NAME)
