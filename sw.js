@@ -1,5 +1,46 @@
 var CACHE_NAME = "html5-qr-code-scanner-cache-v1";
 
+var addToCache = function(request, response) {
+    // Clone response stream before caching or returning it
+    var responseToCache = response.clone();
+    caches.open(CACHE_NAME)
+        .then(function(cache) {
+            // Add response to cache
+            console.log("Adding response to cache: ", responseToCache);
+            cache.put(request, responseToCache);
+        });
+};
+
+var deleteCaches = function() {
+    return caches.keys()
+        .then(function(cacheNames) {
+            return Promise.all(
+                cacheNames.forEach(function(cacheName) {
+                    if (CACHE_NAME != cacheName) {
+                        console.log("Deleting cache: ", cacheName);
+                        return caches.delete(cacheName);
+                    }
+                })
+            );
+        });    
+};
+
+var fetchRequestAndCacheResponse = function(request) {
+    return fetch(request)
+        .then(function(networkResponse) {
+            console.log("Handling response: ", networkResponse);
+
+            addToCache(event.request, networkResponse);
+
+            console.log("Returning response to the browser: ", networkResponse);
+            return networkResponse;
+        })
+        .catch(function(error) {
+            console.error("Fetching failed: ", error);
+            throw error;
+        });    
+};
+
 self.addEventListener('install', function(event) {
     // Perform install steps
     console.log("Installing ServiceWorker");
@@ -27,38 +68,19 @@ self.addEventListener('install', function(event) {
 self.addEventListener('fetch', function(event) {
     // Handle HTTP requests coming from the page
     console.log("Fetching " + event.request.url);
-    event.respondWith(
-        caches
-            .match(event.request)
-            .then(function(response) {
-                if (response) {
-                    console.log("Found matching response in cache: ", response);
-                    return response;
-                }
+    var response = caches
+        .match(event.request)
+        .then(function(cacheResponse) {
+            if (cacheResponse) {
+                console.log("Found matching response in cache: ", cacheResponse);
+                return cacheResponse;
+            }
 
-                console.log("Fetching response from network: ", response);
-                return fetch(event.request)
-                    .then(function(response) {
-                        console.log("Handling response: ", response);
+            console.log("Fetching response from network: ", response);
+            return fetchRequestAndCacheResponse(event.request);
+        });
 
-                        // Close response stream before caching or returning it
-                        var responseToCache = response.clone();
-                        caches.open(CACHE_NAME)
-                            .then(function(cache) {
-                                // Add response to cache
-                                console.log("Adding response to cache: ", responseToCache);
-                                cache.put(event.request, responseToCache);
-                            });
-
-                        console.log("Returning response to the browser: ", response);
-                        return response;
-                    })
-                    .catch(function(error) {
-                        console.error("Fetching failed: ", error);
-                        throw error;
-                    });
-            })
-    );
+    event.respondWith(response);
 });
 
 self.addEventListener('activate', function(event) {
@@ -67,17 +89,5 @@ self.addEventListener('activate', function(event) {
 
     // Here we can clean obsolete caches
     console.log("Deleting obsolete caches");
-    event.waitUntil(
-        caches.keys()
-            .then(function(cacheNames) {
-                return Promise.all(
-                    cacheNames.forEach(function(cacheName) {
-                        if (CACHE_NAME != cacheName) {
-                            console.log("Deleting cache: ", cacheName);
-                            return caches.delete(cacheName);
-                        }
-                    })
-                );
-            })
-    );
+    event.waitUntil(deleteCaches());
 });
